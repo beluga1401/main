@@ -1,113 +1,164 @@
--- Load UI Library
-local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/xHeptc/Kavo-UI-Library/main/source.lua"))()
-local Window = Library.CreateLib("Vua Ngựa", "Midnight")  -- đổi tên hub ở đây
+-- Blox Fruits Roblox PvP Script (Update)
+-- Chức năng: Nhảy cao, No Clip, Aimbot gần nhất + UI đẹp (bỏ chạy nhanh)
 
--- Player setup
-local Player = game.Players.LocalPlayer
-local Character = Player.Character or Player.CharacterAdded:Wait()
-local Humanoid = Character:WaitForChild("Humanoid")
-local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
+-- Load libraries
+local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
+local player = Players.LocalPlayer
+local mouse = player:GetMouse()
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
 
--- Main Tab
-local Main = Window:NewTab("Main")
-local MainSection = Main:NewSection("Main Controls")
+-- Tạo UI
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "PvPControlUI"
+ScreenGui.Parent = player:WaitForChild("PlayerGui")
 
--- Hide/Show UI (smooth, no size change)
-local uiVisible = true
-MainSection:NewButton("Toggle UI", "Ẩn hoặc hiện toàn bộ UI", function()
-    uiVisible = not uiVisible
-    if Window and Window.MainFrame then
-        Window.MainFrame.Visible = uiVisible
-    end
-end)
+local Frame = Instance.new("Frame")
+Frame.Parent = ScreenGui
+Frame.Size = UDim2.new(0, 250, 0, 300)
+Frame.Position = UDim2.new(0, 30, 0, 100)
+Frame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+Frame.BackgroundTransparency = 0.1
+Frame.BorderSizePixel = 0
+Frame.Active = true
+Frame.Draggable = true
+Frame.ClipsDescendants = true
 
--- NoClip Setup (Stable và hiệu quả)
+local UICorner = Instance.new("UICorner")
+UICorner.CornerRadius = UDim.new(0, 12)
+UICorner.Parent = Frame
+
+local Title = Instance.new("TextLabel")
+Title.Parent = Frame
+Title.Size = UDim2.new(1, 0, 0, 40)
+Title.Text = "⚔️ BelugaPvP Panel ⚔️"
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.BackgroundTransparency = 1
+Title.Font = Enum.Font.GothamBold
+Title.TextScaled = true
+
+local JumpLabel = Instance.new("TextLabel")
+JumpLabel.Parent = Frame
+JumpLabel.Position = UDim2.new(0, 10, 0, 50)
+JumpLabel.Size = UDim2.new(0, 100, 0, 25)
+JumpLabel.Text = "Jump Power"
+JumpLabel.BackgroundTransparency = 1
+JumpLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+JumpLabel.Font = Enum.Font.Gotham
+JumpLabel.TextScaled = true
+
+local JumpBox = Instance.new("TextBox")
+JumpBox.Parent = Frame
+JumpBox.Position = UDim2.new(0, 120, 0, 50)
+JumpBox.Size = UDim2.new(0, 100, 0, 25)
+JumpBox.PlaceholderText = "50"
+JumpBox.Text = ""
+JumpBox.Font = Enum.Font.Gotham
+JumpBox.TextScaled = true
+JumpBox.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+JumpBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+
+local NoClipButton = Instance.new("TextButton")
+NoClipButton.Parent = Frame
+NoClipButton.Position = UDim2.new(0.1, 0, 0, 100)
+NoClipButton.Size = UDim2.new(0.8, 0, 0, 40)
+NoClipButton.Text = "Enable NoClip"
+NoClipButton.BackgroundColor3 = Color3.fromRGB(70, 130, 180)
+NoClipButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+NoClipButton.Font = Enum.Font.GothamBold
+NoClipButton.TextScaled = true
+
+local AimbotButton = Instance.new("TextButton")
+AimbotButton.Parent = Frame
+AimbotButton.Position = UDim2.new(0.1, 0, 0, 150)
+AimbotButton.Size = UDim2.new(0.8, 0, 0, 40)
+AimbotButton.Text = "Enable Aimbot"
+AimbotButton.BackgroundColor3 = Color3.fromRGB(180, 70, 70)
+AimbotButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+AimbotButton.Font = Enum.Font.GothamBold
+AimbotButton.TextScaled = true
+
 local noclip = false
-MainSection:NewToggle("NoClip", "Đi xuyên tường (ổn định)", function(state)
-    noclip = state
-    if noclip then
-        Humanoid:ChangeState(Enum.HumanoidStateType.Physics)
+local aimbot = false
+
+-- Update Jump Power
+JumpBox.FocusLost:Connect(function()
+    local value = tonumber(JumpBox.Text)
+    if value then
+        humanoid.JumpPower = value
     else
-        Humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
+        humanoid.JumpPower = 50
     end
 end)
 
-RunService.Heartbeat:Connect(function()
-    if noclip and Character and Character.Parent then
-        for _, part in pairs(Character:GetDescendants()) do
-            if part:IsA("BasePart") then
-                part.CanCollide = false
+-- NoClip toggle
+NoClipButton.MouseButton1Click:Connect(function()
+    noclip = not noclip
+    NoClipButton.Text = noclip and "Disable NoClip" or "Enable NoClip"
+end)
+
+-- Aimbot toggle
+AimbotButton.MouseButton1Click:Connect(function()
+    aimbot = not aimbot
+    AimbotButton.Text = aimbot and "Disable Aimbot" or "Enable Aimbot"
+end)
+
+-- NoClip handler
+RunService.Stepped:Connect(function()
+    if noclip and character then
+        for _, v in pairs(character:GetChildren()) do
+            if v:IsA("BasePart") then
+                v.CanCollide = false
             end
         end
-        if HumanoidRootPart then
-            HumanoidRootPart.CanCollide = false
-        end
     end
 end)
 
--- Speed Hack Setup (Fixed logic)
-local speedEnabled = false
-local speedMultiplier = 3
-local BodyVelocity = nil
-
-MainSection:NewToggle("Speed Hack", "Bật/tắt chạy nhanh", function(state)
-    speedEnabled = state
-    if state then
-        BodyVelocity = Instance.new("BodyVelocity")
-        BodyVelocity.MaxForce = Vector3.new(1e5, 0, 1e5)
-        BodyVelocity.Parent = HumanoidRootPart
-    else
-        if BodyVelocity then
-            BodyVelocity:Destroy()
-            BodyVelocity = nil
-        end
-        HumanoidRootPart.Velocity = Vector3.new(0, HumanoidRootPart.Velocity.Y, 0)
-    end
-end)
-
-MainSection:NewSlider("Speed Multiplier", "Điều chỉnh tốc độ chạy", 10, 1, function(s)
-    speedMultiplier = s
-end)
-
+-- Aimbot handler
 RunService.RenderStepped:Connect(function()
-    if speedEnabled and BodyVelocity then
-        BodyVelocity.Velocity = Player.Character.Humanoid.MoveDirection * speedMultiplier * 50
-    end
-end)
-
--- Jump Hack Setup
-local jumpEnabled = false
-local jumpPower = 100
-
-MainSection:NewToggle("Jump Hack", "Bật/tắt nhảy cao", function(state)
-    jumpEnabled = state
-    if state then
-        Humanoid.JumpPower = jumpPower
-    else
-        Humanoid.JumpPower = 50
-    end
-end)
-
-MainSection:NewSlider("Jump Power", "Điều chỉnh sức nhảy", 200, 50, function(s)
-    jumpPower = s
-    if jumpEnabled then
-        Humanoid.JumpPower = s
-    end
-end)
-
--- 🌈 RGB Hiệu ứng tên hub (tiêu đề)
-spawn(function()
-    local hue = 0
-    while true do
-        local color = Color3.fromHSV(hue, 1, 1)
-        pcall(function()
-            if Window and Window.MainFrame and Window.MainFrame.TopFrame and Window.MainFrame.TopFrame.Title then
-                Window.MainFrame.TopFrame.Title.TextColor3 = color
+    if aimbot then
+        local closest = nil
+        local shortest = math.huge
+        for _, p in pairs(Players:GetPlayers()) do
+            if p ~= player and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
+                local dist = (p.Character.HumanoidRootPart.Position - character.HumanoidRootPart.Position).magnitude
+                if dist < shortest then
+                    shortest = dist
+                    closest = p
+                end
             end
-        end)
-        hue = hue + 0.005
-        if hue > 1 then hue = 0 end
-        wait(0.03)
+        end
+        if closest then
+            local hrp = closest.Character.HumanoidRootPart
+            mouse.TargetFilter = hrp
+            local cam = workspace.CurrentCamera
+            cam.CFrame = CFrame.new(cam.CFrame.Position, hrp.Position)
+        end
+    end
+end)
+
+print("BelugaPvP Script đã chạy!")
+
+-- Thông báo trên màn hình khi chạy script thành công
+local Notification = Instance.new("TextLabel")
+Notification.Parent = ScreenGui
+Notification.Size = UDim2.new(0, 280, 0, 40)
+Notification.Position = UDim2.new(0, 10, 0, 360)
+Notification.BackgroundColor3 = Color3.fromRGB(40, 150, 40)
+Notification.TextColor3 = Color3.new(1, 1, 1)
+Notification.Font = Enum.Font.GothamBold
+Notification.TextScaled = true
+Notification.Text = "🚀 BelugaPvP Script loaded successfully!"
+Notification.BackgroundTransparency = 0
+Notification.ZIndex = 10
+Notification.ClipsDescendants = true
+local cornerNotif = Instance.new("UICorner", Notification)
+cornerNotif.CornerRadius = UDim.new(0, 12)
+
+-- Tự động ẩn sau 5 giây
+delay(5, function()
+    if Notification and Notification.Parent then
+        Notification:Destroy()
     end
 end)
