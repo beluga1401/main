@@ -5,6 +5,12 @@ local player = Players.LocalPlayer
 local character = player.Character or player.CharacterAdded:Wait()
 local humanoid = character:WaitForChild("Humanoid")
 
+-- Update character and humanoid khi respawn
+player.CharacterAdded:Connect(function(char)
+    character = char
+    humanoid = character:WaitForChild("Humanoid")
+end)
+
 -- Create UI
 local ScreenGui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
 ScreenGui.Name = "BelugaPvP_UI"
@@ -13,7 +19,7 @@ local Frame = Instance.new("Frame", ScreenGui)
 Frame.Size = UDim2.new(0, 350, 0, 400)
 Frame.Position = UDim2.new(0, 30, 0, 100)
 Frame.BackgroundColor3 = Color3.fromRGB(30, 30, 60)
-Frame.BackgroundTransparency = 0.4  -- Trong suốt nhẹ
+Frame.BackgroundTransparency = 0.4
 Frame.BorderSizePixel = 0
 Frame.Active = true
 Frame.Draggable = true
@@ -51,7 +57,7 @@ local function createTextBox(parent, posY, placeholder)
     box.TextScaled = true
     box.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
     box.TextColor3 = Color3.fromRGB(255, 255, 255)
-    box.BackgroundTransparency = 0.2  -- Textbox nền nhẹ trong suốt
+    box.BackgroundTransparency = 0.2
     return box
 end
 
@@ -61,7 +67,7 @@ local function createButton(parent, posY, text, bgColor)
     btn.Size = UDim2.new(0.8, 0, 0, 40)
     btn.Text = text
     btn.BackgroundColor3 = bgColor
-    btn.BackgroundTransparency = 0.1  -- Nền nút nhẹ trong
+    btn.BackgroundTransparency = 0.1
     btn.TextColor3 = Color3.fromRGB(255, 255, 255)
     btn.Font = Enum.Font.GothamBold
     btn.TextScaled = true
@@ -175,20 +181,12 @@ NoClipButton.MouseButton1Click:Connect(function()
     showNotification(noclipEnabled and "🟢 NoClip Enabled" or "🔴 NoClip Disabled")
 end)
 
--- NoClip implementation
+-- NoClip implementation (chạy liên tục và đảm bảo cập nhật trạng thái CanCollide)
 RunService.Stepped:Connect(function()
-    if noclipEnabled and character then
+    if character and character.Parent then
         for _, part in pairs(character:GetChildren()) do
             if part:IsA("BasePart") then
-                part.CanCollide = false
-            end
-        end
-    else
-        if character then
-            for _, part in pairs(character:GetChildren()) do
-                if part:IsA("BasePart") then
-                    part.CanCollide = true
-                end
+                part.CanCollide = not noclipEnabled
             end
         end
     end
