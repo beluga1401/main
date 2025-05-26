@@ -13,6 +13,7 @@ local Frame = Instance.new("Frame", ScreenGui)
 Frame.Size = UDim2.new(0, 350, 0, 400)
 Frame.Position = UDim2.new(0, 30, 0, 100)
 Frame.BackgroundColor3 = Color3.fromRGB(30, 30, 60)
+Frame.BackgroundTransparency = 0.4  -- Trong suốt nhẹ
 Frame.BorderSizePixel = 0
 Frame.Active = true
 Frame.Draggable = true
@@ -22,7 +23,7 @@ UICorner.CornerRadius = UDim.new(0, 16)
 
 local Title = Instance.new("TextLabel", Frame)
 Title.Size = UDim2.new(1, 0, 0, 50)
-Title.Text = "💎 BelugaPvP Control Panel💎"
+Title.Text = "💎 BelugaPvP Control Panel"
 Title.TextColor3 = Color3.fromRGB(255, 215, 0)
 Title.BackgroundTransparency = 1
 Title.Font = Enum.Font.GothamBlack
@@ -50,6 +51,7 @@ local function createTextBox(parent, posY, placeholder)
     box.TextScaled = true
     box.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
     box.TextColor3 = Color3.fromRGB(255, 255, 255)
+    box.BackgroundTransparency = 0.2  -- Textbox nền nhẹ trong suốt
     return box
 end
 
@@ -59,9 +61,12 @@ local function createButton(parent, posY, text, bgColor)
     btn.Size = UDim2.new(0.8, 0, 0, 40)
     btn.Text = text
     btn.BackgroundColor3 = bgColor
+    btn.BackgroundTransparency = 0.1  -- Nền nút nhẹ trong
     btn.TextColor3 = Color3.fromRGB(255, 255, 255)
     btn.Font = Enum.Font.GothamBold
     btn.TextScaled = true
+    local corner = Instance.new("UICorner", btn)
+    corner.CornerRadius = UDim.new(0, 12)
     return btn
 end
 
@@ -85,13 +90,14 @@ local noclipEnabled = false
 local InfoLabel = Instance.new("TextLabel", Frame)
 InfoLabel.Position = UDim2.new(0.1, 0, 0, 300)
 InfoLabel.Size = UDim2.new(0.8, 0, 0, 40)
-InfoLabel.Text = "Hotkey: H = Toggle Aimbot"
+InfoLabel.Text = "Hotkey: H = Toggle Aimbot | B = Toggle UI"
 InfoLabel.TextColor3 = Color3.fromRGB(255, 215, 0)
 InfoLabel.BackgroundTransparency = 1
 InfoLabel.Font = Enum.Font.Gotham
 InfoLabel.TextScaled = true
 
 local aimbotEnabled = false
+local isVisible = true
 
 -- Notification function
 local function showNotification(text, color)
@@ -99,11 +105,11 @@ local function showNotification(text, color)
     Notification.Size = UDim2.new(0, 350, 0, 40)
     Notification.Position = UDim2.new(0.5, -175, 0.1, 0)
     Notification.BackgroundColor3 = color or Color3.fromRGB(0, 170, 0)
+    Notification.BackgroundTransparency = 0.1
     Notification.TextColor3 = Color3.new(1, 1, 1)
     Notification.Font = Enum.Font.GothamBold
     Notification.TextScaled = true
     Notification.Text = text
-    Notification.BackgroundTransparency = 0.1
     Notification.ZIndex = 10
     local corner = Instance.new("UICorner", Notification)
     corner.CornerRadius = UDim.new(0, 12)
@@ -115,7 +121,7 @@ local function showNotification(text, color)
 end
 
 -- Initial notification
-showNotification("✅ DEV BỐ BELUGA Loaded", Color3.fromRGB(0, 200, 0))
+showNotification("✅ BelugaPvP Script Loaded", Color3.fromRGB(0, 200, 0))
 
 -- Speed toggle
 SpeedToggleButton.MouseButton1Click:Connect(function()
@@ -124,11 +130,13 @@ SpeedToggleButton.MouseButton1Click:Connect(function()
         humanoid.WalkSpeed = tonumber(SpeedBox.Text) or 16
         SpeedToggleButton.Text = "Disable Speed"
         SpeedToggleButton.BackgroundColor3 = Color3.fromRGB(0, 200, 0)
+        SpeedToggleButton.BackgroundTransparency = 0.1
         showNotification("🟢 Speed Enabled")
     else
         humanoid.WalkSpeed = 16
         SpeedToggleButton.Text = "Enable Speed"
         SpeedToggleButton.BackgroundColor3 = Color3.fromRGB(50, 150, 250)
+        SpeedToggleButton.BackgroundTransparency = 0.1
         showNotification("🔴 Speed Disabled")
     end
 end)
@@ -147,6 +155,7 @@ JumpToggleButton.MouseButton1Click:Connect(function()
     humanoid.JumpPower = jumpEnabled and jp or 50
     JumpToggleButton.Text = jumpEnabled and "Disable High Jump" or "Enable High Jump"
     JumpToggleButton.BackgroundColor3 = jumpEnabled and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(50, 150, 250)
+    JumpToggleButton.BackgroundTransparency = 0.1
     showNotification(jumpEnabled and "🟢 High Jump Enabled" or "🔴 High Jump Disabled")
 end)
 
@@ -162,6 +171,7 @@ NoClipButton.MouseButton1Click:Connect(function()
     noclipEnabled = not noclipEnabled
     NoClipButton.Text = noclipEnabled and "Disable NoClip" or "Enable NoClip"
     NoClipButton.BackgroundColor3 = noclipEnabled and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(180, 50, 50)
+    NoClipButton.BackgroundTransparency = 0.1
     showNotification(noclipEnabled and "🟢 NoClip Enabled" or "🔴 NoClip Disabled")
 end)
 
@@ -193,10 +203,14 @@ RunService.RenderStepped:Connect(function()
     end
 end)
 
--- Aimbot toggle by H key
+-- Input for toggling UI and Aimbot
 UIS.InputBegan:Connect(function(input, gameProcessed)
     if not gameProcessed then
-        if input.KeyCode == Enum.KeyCode.H then
+        if input.KeyCode == Enum.KeyCode.B then
+            isVisible = not isVisible
+            Frame.Visible = isVisible
+            showNotification(isVisible and "🟢 UI Shown (B)" or "🔴 UI Hidden (B)", Color3.fromRGB(255, 215, 0))
+        elseif input.KeyCode == Enum.KeyCode.H then
             aimbotEnabled = not aimbotEnabled
             showNotification(aimbotEnabled and "🟢 Aimbot Enabled (H)" or "🔴 Aimbot Disabled (H)", Color3.fromRGB(255, 140, 0))
         end
