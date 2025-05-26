@@ -1,128 +1,215 @@
--- Blox Fruits Roblox PvP Script (Update)
--- Chức năng: Nhảy cao, No Clip, Aimbot gần nhất + UI đẹp (bỏ chạy nhanh)
-
--- Load libraries
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
+local UIS = game:GetService("UserInputService")
 local player = Players.LocalPlayer
-local mouse = player:GetMouse()
 local character = player.Character or player.CharacterAdded:Wait()
 local humanoid = character:WaitForChild("Humanoid")
 
--- Tạo UI
-local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "PvPControlUI"
-ScreenGui.Parent = player:WaitForChild("PlayerGui")
+-- Create UI
+local ScreenGui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
+ScreenGui.Name = "BelugaPvP_UI"
 
-local Frame = Instance.new("Frame")
-Frame.Parent = ScreenGui
-Frame.Size = UDim2.new(0, 250, 0, 300)
+local Frame = Instance.new("Frame", ScreenGui)
+Frame.Size = UDim2.new(0, 350, 0, 400)
 Frame.Position = UDim2.new(0, 30, 0, 100)
-Frame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-Frame.BackgroundTransparency = 0.1
+Frame.BackgroundColor3 = Color3.fromRGB(30, 30, 60)
 Frame.BorderSizePixel = 0
 Frame.Active = true
 Frame.Draggable = true
-Frame.ClipsDescendants = true
 
-local UICorner = Instance.new("UICorner")
-UICorner.CornerRadius = UDim.new(0, 12)
-UICorner.Parent = Frame
+local UICorner = Instance.new("UICorner", Frame)
+UICorner.CornerRadius = UDim.new(0, 16)
 
-local Title = Instance.new("TextLabel")
-Title.Parent = Frame
-Title.Size = UDim2.new(1, 0, 0, 40)
-Title.Text = "⚔️ BelugaPvP Panel ⚔️"
-Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+local Title = Instance.new("TextLabel", Frame)
+Title.Size = UDim2.new(1, 0, 0, 50)
+Title.Text = "💎 BelugaPvP Control Panel💎"
+Title.TextColor3 = Color3.fromRGB(255, 215, 0)
 Title.BackgroundTransparency = 1
-Title.Font = Enum.Font.GothamBold
+Title.Font = Enum.Font.GothamBlack
 Title.TextScaled = true
 
-local JumpLabel = Instance.new("TextLabel")
-JumpLabel.Parent = Frame
-JumpLabel.Position = UDim2.new(0, 10, 0, 50)
-JumpLabel.Size = UDim2.new(0, 100, 0, 25)
-JumpLabel.Text = "Jump Power"
-JumpLabel.BackgroundTransparency = 1
-JumpLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-JumpLabel.Font = Enum.Font.Gotham
-JumpLabel.TextScaled = true
+local function createLabel(parent, posY, text)
+    local label = Instance.new("TextLabel", parent)
+    label.Position = UDim2.new(0.1, 0, 0, posY)
+    label.Size = UDim2.new(0.35, 0, 0, 30)
+    label.Text = text
+    label.TextColor3 = Color3.fromRGB(255, 255, 255)
+    label.BackgroundTransparency = 1
+    label.Font = Enum.Font.Gotham
+    label.TextScaled = true
+    return label
+end
 
-local JumpBox = Instance.new("TextBox")
-JumpBox.Parent = Frame
-JumpBox.Position = UDim2.new(0, 120, 0, 50)
-JumpBox.Size = UDim2.new(0, 100, 0, 25)
-JumpBox.PlaceholderText = "50"
-JumpBox.Text = ""
-JumpBox.Font = Enum.Font.Gotham
-JumpBox.TextScaled = true
-JumpBox.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-JumpBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+local function createTextBox(parent, posY, placeholder)
+    local box = Instance.new("TextBox", parent)
+    box.Position = UDim2.new(0.5, 0, 0, posY)
+    box.Size = UDim2.new(0.4, 0, 0, 30)
+    box.PlaceholderText = placeholder
+    box.Text = ""
+    box.Font = Enum.Font.Gotham
+    box.TextScaled = true
+    box.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+    box.TextColor3 = Color3.fromRGB(255, 255, 255)
+    return box
+end
 
-local NoClipButton = Instance.new("TextButton")
-NoClipButton.Parent = Frame
-NoClipButton.Position = UDim2.new(0.1, 0, 0, 100)
-NoClipButton.Size = UDim2.new(0.8, 0, 0, 40)
-NoClipButton.Text = "Enable NoClip"
-NoClipButton.BackgroundColor3 = Color3.fromRGB(70, 130, 180)
-NoClipButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-NoClipButton.Font = Enum.Font.GothamBold
-NoClipButton.TextScaled = true
+local function createButton(parent, posY, text, bgColor)
+    local btn = Instance.new("TextButton", parent)
+    btn.Position = UDim2.new(0.1, 0, 0, posY)
+    btn.Size = UDim2.new(0.8, 0, 0, 40)
+    btn.Text = text
+    btn.BackgroundColor3 = bgColor
+    btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btn.Font = Enum.Font.GothamBold
+    btn.TextScaled = true
+    return btn
+end
 
-local AimbotButton = Instance.new("TextButton")
-AimbotButton.Parent = Frame
-AimbotButton.Position = UDim2.new(0.1, 0, 0, 150)
-AimbotButton.Size = UDim2.new(0.8, 0, 0, 40)
-AimbotButton.Text = "Enable Aimbot"
-AimbotButton.BackgroundColor3 = Color3.fromRGB(180, 70, 70)
-AimbotButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-AimbotButton.Font = Enum.Font.GothamBold
-AimbotButton.TextScaled = true
+-- Speed
+local SpeedLabel = createLabel(Frame, 70, "Speed:")
+local SpeedBox = createTextBox(Frame, 70, "16")
+local SpeedToggleButton = createButton(Frame, 110, "Enable Speed", Color3.fromRGB(50, 150, 250))
+local speedEnabled = false
 
-local noclip = false
-local aimbot = false
+-- Jump Power
+local JumpLabel = createLabel(Frame, 160, "Jump Power:")
+local JumpBox = createTextBox(Frame, 160, "100")
+local JumpToggleButton = createButton(Frame, 200, "Enable High Jump", Color3.fromRGB(50, 150, 250))
+local jumpEnabled = false
 
--- Update Jump Power
-JumpBox.FocusLost:Connect(function()
-    local value = tonumber(JumpBox.Text)
-    if value then
-        humanoid.JumpPower = value
+-- NoClip
+local NoClipButton = createButton(Frame, 250, "Enable NoClip", Color3.fromRGB(180, 50, 50))
+local noclipEnabled = false
+
+-- Info Label
+local InfoLabel = Instance.new("TextLabel", Frame)
+InfoLabel.Position = UDim2.new(0.1, 0, 0, 300)
+InfoLabel.Size = UDim2.new(0.8, 0, 0, 40)
+InfoLabel.Text = "Hotkey: H = Toggle Aimbot"
+InfoLabel.TextColor3 = Color3.fromRGB(255, 215, 0)
+InfoLabel.BackgroundTransparency = 1
+InfoLabel.Font = Enum.Font.Gotham
+InfoLabel.TextScaled = true
+
+local aimbotEnabled = false
+
+-- Notification function
+local function showNotification(text, color)
+    local Notification = Instance.new("TextLabel", ScreenGui)
+    Notification.Size = UDim2.new(0, 350, 0, 40)
+    Notification.Position = UDim2.new(0.5, -175, 0.1, 0)
+    Notification.BackgroundColor3 = color or Color3.fromRGB(0, 170, 0)
+    Notification.TextColor3 = Color3.new(1, 1, 1)
+    Notification.Font = Enum.Font.GothamBold
+    Notification.TextScaled = true
+    Notification.Text = text
+    Notification.BackgroundTransparency = 0.1
+    Notification.ZIndex = 10
+    local corner = Instance.new("UICorner", Notification)
+    corner.CornerRadius = UDim.new(0, 12)
+    delay(4, function()
+        if Notification and Notification.Parent then
+            Notification:Destroy()
+        end
+    end)
+end
+
+-- Initial notification
+showNotification("✅ DEV BỐ BELUGA Loaded", Color3.fromRGB(0, 200, 0))
+
+-- Speed toggle
+SpeedToggleButton.MouseButton1Click:Connect(function()
+    speedEnabled = not speedEnabled
+    if speedEnabled then
+        humanoid.WalkSpeed = tonumber(SpeedBox.Text) or 16
+        SpeedToggleButton.Text = "Disable Speed"
+        SpeedToggleButton.BackgroundColor3 = Color3.fromRGB(0, 200, 0)
+        showNotification("🟢 Speed Enabled")
     else
-        humanoid.JumpPower = 50
+        humanoid.WalkSpeed = 16
+        SpeedToggleButton.Text = "Enable Speed"
+        SpeedToggleButton.BackgroundColor3 = Color3.fromRGB(50, 150, 250)
+        showNotification("🔴 Speed Disabled")
+    end
+end)
+
+SpeedBox.FocusLost:Connect(function()
+    if speedEnabled then
+        local val = tonumber(SpeedBox.Text)
+        humanoid.WalkSpeed = (val and val > 0) and val or 16
+    end
+end)
+
+-- Jump toggle
+JumpToggleButton.MouseButton1Click:Connect(function()
+    jumpEnabled = not jumpEnabled
+    local jp = tonumber(JumpBox.Text) or 100
+    humanoid.JumpPower = jumpEnabled and jp or 50
+    JumpToggleButton.Text = jumpEnabled and "Disable High Jump" or "Enable High Jump"
+    JumpToggleButton.BackgroundColor3 = jumpEnabled and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(50, 150, 250)
+    showNotification(jumpEnabled and "🟢 High Jump Enabled" or "🔴 High Jump Disabled")
+end)
+
+JumpBox.FocusLost:Connect(function()
+    if jumpEnabled then
+        local val = tonumber(JumpBox.Text)
+        humanoid.JumpPower = (val and val > 0) and val or 100
     end
 end)
 
 -- NoClip toggle
 NoClipButton.MouseButton1Click:Connect(function()
-    noclip = not noclip
-    NoClipButton.Text = noclip and "Disable NoClip" or "Enable NoClip"
+    noclipEnabled = not noclipEnabled
+    NoClipButton.Text = noclipEnabled and "Disable NoClip" or "Enable NoClip"
+    NoClipButton.BackgroundColor3 = noclipEnabled and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(180, 50, 50)
+    showNotification(noclipEnabled and "🟢 NoClip Enabled" or "🔴 NoClip Disabled")
 end)
 
--- Aimbot toggle
-AimbotButton.MouseButton1Click:Connect(function()
-    aimbot = not aimbot
-    AimbotButton.Text = aimbot and "Disable Aimbot" or "Enable Aimbot"
-end)
-
--- NoClip handler
+-- NoClip implementation
 RunService.Stepped:Connect(function()
-    if noclip and character then
-        for _, v in pairs(character:GetChildren()) do
-            if v:IsA("BasePart") then
-                v.CanCollide = false
+    if noclipEnabled and character then
+        for _, part in pairs(character:GetChildren()) do
+            if part:IsA("BasePart") then
+                part.CanCollide = false
+            end
+        end
+    else
+        if character then
+            for _, part in pairs(character:GetChildren()) do
+                if part:IsA("BasePart") then
+                    part.CanCollide = true
+                end
             end
         end
     end
 end)
 
--- Aimbot handler
+-- Keep speed active if enabled
 RunService.RenderStepped:Connect(function()
-    if aimbot then
-        local closest = nil
-        local shortest = math.huge
+    if speedEnabled then
+        humanoid.WalkSpeed = tonumber(SpeedBox.Text) or 16
+    else
+        humanoid.WalkSpeed = 16
+    end
+end)
+
+-- Aimbot toggle by H key
+UIS.InputBegan:Connect(function(input, gameProcessed)
+    if not gameProcessed then
+        if input.KeyCode == Enum.KeyCode.H then
+            aimbotEnabled = not aimbotEnabled
+            showNotification(aimbotEnabled and "🟢 Aimbot Enabled (H)" or "🔴 Aimbot Disabled (H)", Color3.fromRGB(255, 140, 0))
+        end
+    end
+end)
+
+-- Aimbot behavior
+RunService.RenderStepped:Connect(function()
+    if aimbotEnabled then
+        local closest, shortest = nil, math.huge
         for _, p in pairs(Players:GetPlayers()) do
             if p ~= player and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
-                local dist = (p.Character.HumanoidRootPart.Position - character.HumanoidRootPart.Position).magnitude
+                local dist = (p.Character.HumanoidRootPart.Position - character.HumanoidRootPart.Position).Magnitude
                 if dist < shortest then
                     shortest = dist
                     closest = p
@@ -131,34 +218,7 @@ RunService.RenderStepped:Connect(function()
         end
         if closest then
             local hrp = closest.Character.HumanoidRootPart
-            mouse.TargetFilter = hrp
-            local cam = workspace.CurrentCamera
-            cam.CFrame = CFrame.new(cam.CFrame.Position, hrp.Position)
+            workspace.CurrentCamera.CFrame = CFrame.new(workspace.CurrentCamera.CFrame.Position, hrp.Position)
         end
-    end
-end)
-
-print("BelugaPvP Script đã chạy!")
-
--- Thông báo trên màn hình khi chạy script thành công
-local Notification = Instance.new("TextLabel")
-Notification.Parent = ScreenGui
-Notification.Size = UDim2.new(0, 280, 0, 40)
-Notification.Position = UDim2.new(0, 10, 0, 360)
-Notification.BackgroundColor3 = Color3.fromRGB(40, 150, 40)
-Notification.TextColor3 = Color3.new(1, 1, 1)
-Notification.Font = Enum.Font.GothamBold
-Notification.TextScaled = true
-Notification.Text = "🚀 BelugaPvP Script loaded successfully!"
-Notification.BackgroundTransparency = 0
-Notification.ZIndex = 10
-Notification.ClipsDescendants = true
-local cornerNotif = Instance.new("UICorner", Notification)
-cornerNotif.CornerRadius = UDim.new(0, 12)
-
--- Tự động ẩn sau 5 giây
-delay(5, function()
-    if Notification and Notification.Parent then
-        Notification:Destroy()
     end
 end)
